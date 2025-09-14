@@ -1,0 +1,46 @@
+# Xcode
+*.xcworkspace
+*.xcuserdata/
+*.xcuserstate
+*.xcuserdatad/
+DerivedData/
+.idea/
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Swift Package Manager
+.build/
+Packages/
+Package.resolved
+
+# CocoaPods
+Pods/
+Podfile.lock
+
+# Carthage
+Carthage/Build/
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+
+# архивы, бэкапы
+*.zip
+*.tar.gz
+*.tgz
+*.gz
+
+# конфиги окружения
+*.env
+
+# логи
+*.log
+
+# Снимки состояния симулятора
+*.xcscmblueprint
+

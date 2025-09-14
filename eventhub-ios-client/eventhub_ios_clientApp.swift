@@ -11,7 +11,7 @@ import SwiftUI
 struct eventhub_ios_clientApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            MainPage()
         }
     }
 }
