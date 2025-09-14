@@ -23,7 +23,6 @@ struct WelcomePage: View {
                     .font(.title)
                     .padding(.bottom, 8)
                 
-                
                 TextField("Email", text: $email)
                     .keyboardType(.emailAddress)
                     .autocapitalization(.none)
@@ -54,7 +53,6 @@ struct WelcomePage: View {
                         .cornerRadius(8)
                 }
                 .frame(maxWidth: 350)
-                
                 
                 HStack {
                     Divider()

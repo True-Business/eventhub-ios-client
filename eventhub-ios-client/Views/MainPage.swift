@@ -9,6 +9,8 @@ import SwiftUI
 struct MainPage: View {
     @StateObject private var viewModel = EventsViewModel()
     
+    @State private var showSearchPage: Bool = false
+    
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
@@ -26,7 +28,9 @@ struct MainPage: View {
                     Spacer()
                     BottomBarButton(icon: "house.fill", label: "Лента")
                     Spacer()
-                    BottomBarButton(icon: "magnifyingglass", label: "Поиск")
+                    NavigationLink(destination: SearchPage().navigationBarBackButtonHidden()) {
+                        BottomBarButton(icon: "magnifyingglass", label: "Поиск")
+                    }.buttonStyle(.plain)
                     Spacer()
                     BottomBarButton(icon: "person.fill", label: "Друзья")
                     Spacer()
@@ -42,6 +46,9 @@ struct MainPage: View {
                     viewModel.loadEvents()
                 }
             }
+        }
+        .navigationDestination(isPresented: $showSearchPage) {
+            SearchPage()
         }
     }
 }
