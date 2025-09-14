@@ -7,16 +7,12 @@
 import SwiftUI
 
 struct MainPage: View {
-    
-    @State private var events: [Event] = [
-            Event(id: 1, title: "Событие 1", description: "Описание события 1"),
-            Event(id: 2, title: "Событие 2", description: "Описание события 2")
-        ]
+    @StateObject private var viewModel = EventsViewModel()
     
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-                List(events) { event in
+                List(viewModel.events) { event in
                     EventCard(event: event)
                         .listRowInsets(EdgeInsets())
                         .onTapGesture {
@@ -41,6 +37,11 @@ struct MainPage: View {
                 .background(Color.white)
             }
             .edgesIgnoringSafeArea(.bottom)
+            .onAppear {
+                if viewModel.events.isEmpty {
+                    viewModel.loadEvents()
+                }
+            }
         }
     }
 }

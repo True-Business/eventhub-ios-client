@@ -30,7 +30,7 @@ struct EventCard: View {
                 Text(event.title)
                     .font(.headline)
                     .foregroundColor(.black)
-                Text(event.description)
+                Text(event.location)
                     .font(.subheadline)
                     .foregroundColor(.gray)
             }

@@ -91,6 +91,7 @@ struct WelcomePage: View {
             }
             .navigationDestination(isPresented: $showMain) {
                 MainPage()
+                    .navigationBarBackButtonHidden(true)
             }
         }
     }
