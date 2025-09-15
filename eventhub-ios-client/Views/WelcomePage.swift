@@ -37,22 +37,14 @@ struct WelcomePage: View {
                     .background(Color(.secondarySystemBackground))
                     .cornerRadius(8)
                 
-                Button(action: {
+                GradientButton(title: "Войти", textColor: .black) {
                     if isValidEmail(email) && !password.isEmpty {
                         authViewModel.login(email: email, password: password)
                         showMain = true
                     } else {
                         showError = true
                     }
-                }) {
-                    Text("Войти")
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.yellow)
-                        .foregroundColor(.black)
-                        .cornerRadius(8)
                 }
-                .frame(maxWidth: 350)
                 
                 HStack {
                     Divider()
@@ -68,15 +60,8 @@ struct WelcomePage: View {
                         .background(Color.gray.opacity(0.3))
                 }
                 .frame(maxWidth: 300, maxHeight: 30)
-                                
-                Button("Зарегистрироваться") {
-                    
-                }
-                .frame(maxWidth: 310)
-                .padding()
-                .background(Color.yellow.opacity(0.5))
-                .foregroundColor(.black)
-                .cornerRadius(8)
+                
+                GradientButton(title: "Зарегистрироваться", textColor: .black, colorOpacity: 0.5) {}
                                 
                 Button(action: {
                     showMain = true
