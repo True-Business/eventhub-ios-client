@@ -9,11 +9,10 @@ import SwiftUI
 struct WelcomePage: View {
     @State private var email: String = ""
     @State private var password: String = ""
-    @State private var showMain: Bool = false
     @State private var showRegistration: Bool = false
     @State private var showError: Bool = false
     
-    @ObservedObject var authViewModel: AuthViewModel
+    @EnvironmentObject var authViewModel: AuthViewModel
     
     
     var body: some View {
@@ -40,7 +39,6 @@ struct WelcomePage: View {
                 GradientButton(title: "Войти", textColor: .black) {
                     if isValidEmail(email) && !password.isEmpty {
                         authViewModel.login(email: email, password: password)
-                        showMain = true
                     } else {
                         showError = true
                     }
@@ -61,10 +59,14 @@ struct WelcomePage: View {
                 }
                 .frame(maxWidth: 300, maxHeight: 30)
                 
-                GradientButton(title: "Зарегистрироваться", textColor: .black, colorOpacity: 0.5) {}
+                
+                GradientButton(title: "Зарегистрироваться", textColor: .black, colorOpacity: 0.5) {
+                    showRegistration = true
+                }
                                 
                 Button(action: {
-                    showMain = true
+                    authViewModel.isLoggedIn = true
+                    authViewModel.isLoggedInAnonymously = true
                 }) {
                     Text("Войти анонимно")
                         .foregroundColor(.black)
@@ -72,10 +74,14 @@ struct WelcomePage: View {
                         .padding()
                 }
             }
-            .navigationDestination(isPresented: $showMain) {
+            .navigationDestination(isPresented: $authViewModel.isLoggedIn) {
                 MainPage()
                     .navigationBarBackButtonHidden(true)
             }
+            .navigationDestination(isPresented: $showRegistration) {
+                    RegistrationCredentialsPage()
+                        .navigationBarBackButtonHidden(true)
+                }
         }
     }
     
@@ -86,5 +92,5 @@ struct WelcomePage: View {
 }
 
 #Preview {
-    WelcomePage(authViewModel: AuthViewModel())
+    WelcomePage()
 }

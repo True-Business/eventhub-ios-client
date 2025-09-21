@@ -12,6 +12,7 @@ class EventsViewModel: ObservableObject {
     private let repository = EventRepository()
         
     @Published var events: [Event] = []
+    @Published var searchResults: [Event] = []
     @Published var isLoading: Bool = false
     @Published var selectedCategory: EventCategory = .all
         
@@ -44,7 +45,7 @@ class EventsViewModel: ObservableObject {
             DispatchQueue.main.async {
                 self?.isLoading = false
                 if let newEvents = newEvents {
-                    self?.events = newEvents
+                    self?.searchResults = newEvents
                 }
             }
         }

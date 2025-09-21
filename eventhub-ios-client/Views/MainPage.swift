@@ -8,50 +8,107 @@ import SwiftUI
 
 struct MainPage: View {
     @StateObject private var viewModel = EventsViewModel()
-    
-    @State private var showSearchPage: Bool = false
+    @State private var showSearch: Bool = false
+    @State private var searchText: String = ""
     
     var body: some View {
         NavigationView {
-            VStack(spacing: 0) {
-                List(viewModel.events) { event in
-                    EventCard(event: event)
-                        .listRowInsets(EdgeInsets())
-                        .onTapGesture {
-                            print("Navigate to event \(event.id)")
+            ZStack {
+                VStack(spacing: 0) {
+                    List(viewModel.events) { event in
+                        NavigationLink(destination: EventPage(event: event)) {
+                            EventCard(event: event)
+                                .listRowInsets(EdgeInsets())
+                                .onTapGesture {
+                                    print("Navigate to event \(event.id)")
+                                }
                         }
-                }
-                .listStyle(PlainListStyle())
+                    }
+                    .listStyle(PlainListStyle())
                     
-                // Bottom Bar
-                HStack {
-                    Spacer()
-                    BottomBarButton(icon: "house.fill", label: "Лента")
-                    Spacer()
-                    NavigationLink(destination: SearchPage().navigationBarBackButtonHidden()) {
-                        BottomBarButton(icon: "magnifyingglass", label: "Поиск")
-                    }.buttonStyle(.plain)
-                    Spacer()
-                    BottomBarButton(icon: "person.fill", label: "Друзья")
-                    Spacer()
-                    BottomBarButton(icon: "gearshape.fill", label: "Настройки")
-                    Spacer()
+                    HStack {
+                        Spacer()
+                        BottomBarButton(icon: "house.fill", label: "Главная")
+                        Spacer()
+                        BottomBarButton(icon: "person.2.fill", label: "Друзья")
+                        Spacer()
+                        BottomBarButton(icon: "calendar", label: "Мероприятия")
+                        Spacer()
+                        BottomBarButton(icon: "globe", label: "Организации")
+                        Spacer()
+                    }
+                    .padding()
+                    .background(Color.white)
                 }
-                .padding()
-                .background(Color.white)
-            }
-            .edgesIgnoringSafeArea(.bottom)
-            .onAppear {
-                if viewModel.events.isEmpty {
-                    viewModel.loadEvents()
+                .edgesIgnoringSafeArea(.bottom)
+                .onAppear {
+                    if viewModel.events.isEmpty {
+                        viewModel.loadEvents()
+                    }
+                }
+                .blur(radius: showSearch ? 5 : 0)
+                
+                if showSearch {
+                    VStack {
+                        HStack {
+                            SearchBar(text: $searchText) {
+                                withAnimation {
+                                    showSearch = false
+                                    searchText = ""
+                                    viewModel.searchResults.removeAll()
+                                }
+                            }
+                            .onChange(of: searchText) { oldValue, newValue in
+                                if !newValue.isEmpty {
+                                    viewModel.searchEvents(query: newValue)
+                                }
+                            }
+                        }
+                        .padding()
+                        
+                        List(showSearch ? viewModel.searchResults : viewModel.events) { event in
+                            EventCard(event: event)
+                                .listRowInsets(EdgeInsets())
+                        }
+                        .listStyle(PlainListStyle())
+                    }
+                    .transition(.move(edge: .top))
                 }
             }
-        }
-        .navigationDestination(isPresented: $showSearchPage) {
-            SearchPage()
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    HStack(spacing: 16) {
+                        Button {
+                            withAnimation(.easeInOut) {
+                                showSearch.toggle()
+                            }
+                        } label: {
+                            Image(systemName: "magnifyingglass")
+                        }
+                        .shadow(radius: 2)
+                        .blur(radius: showSearch ? 5 : 0)
+                    }
+                }
+                
+                
+                ToolbarItem(placement: .topBarLeading) {
+                    // Аватар пользователя
+                    Image("defaultAvatar")
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: 40, height: 40)
+                        .clipShape(Circle())
+                        .overlay(
+                            Circle().stroke(Color.gray.opacity(0.5), lineWidth: 1)
+                        )
+                        .shadow(radius: 2)
+                        .blur(radius: showSearch ? 5 : 0)
+                }
+            }
         }
     }
 }
+
 
 #Preview {
     MainPage()

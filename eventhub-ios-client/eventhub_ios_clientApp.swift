@@ -9,9 +9,13 @@ import SwiftUI
 
 @main
 struct eventhub_ios_clientApp: App {
+    
+    @StateObject private var authViewModel = AuthViewModel()
+    
     var body: some Scene {
         WindowGroup {
-            WelcomePage(authViewModel: AuthViewModel())
+            WelcomePage()
+                .environmentObject(authViewModel)
         }
     }
 }

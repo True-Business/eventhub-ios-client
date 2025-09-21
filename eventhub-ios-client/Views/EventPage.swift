@@ -8,6 +8,8 @@ import SwiftUI
 
 struct EventPage:View {
     
+    let event: Event
+    
     var body: some View{
         Text("EventPage")
     }
