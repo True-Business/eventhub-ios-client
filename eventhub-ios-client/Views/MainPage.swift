@@ -15,16 +15,16 @@ struct MainPage: View {
         NavigationView {
             ZStack {
                 VStack(spacing: 0) {
-                    List(viewModel.events) { event in
-                        NavigationLink(destination: EventPage(event: event)) {
-                            EventCard(event: event)
-                                .listRowInsets(EdgeInsets())
-                                .onTapGesture {
-                                    print("Navigate to event \(event.id)")
+                    ScrollView {
+                        LazyVStack(spacing: 0) {
+                            ForEach(viewModel.events) { event in
+                                NavigationLink(destination: EventPage(event: event)) {
+                                    EventCard(event: event)
                                 }
+                                .buttonStyle(PlainButtonStyle()) // убираем эффект кнопки
+                            }
                         }
                     }
-                    .listStyle(PlainListStyle())
                     
                     HStack {
                         Spacer()
@@ -90,19 +90,19 @@ struct MainPage: View {
                     }
                 }
                 
-                
                 ToolbarItem(placement: .topBarLeading) {
-                    // Аватар пользователя
-                    Image("defaultAvatar")
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(width: 40, height: 40)
-                        .clipShape(Circle())
-                        .overlay(
-                            Circle().stroke(Color.gray.opacity(0.5), lineWidth: 1)
-                        )
-                        .shadow(radius: 2)
-                        .blur(radius: showSearch ? 5 : 0)
+                    NavigationLink(destination: OptionsPage()) {
+                        Image("defaultAvatar")
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 40, height: 40)
+                            .clipShape(Circle())
+                            .overlay(
+                                Circle().stroke(Color.gray.opacity(0.5), lineWidth: 1)
+                            )
+                            .shadow(radius: 2)
+                            .blur(radius: showSearch ? 5 : 0)
+                    }
                 }
             }
         }

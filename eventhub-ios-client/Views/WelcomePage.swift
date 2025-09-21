@@ -93,4 +93,5 @@ struct WelcomePage: View {
 
 #Preview {
     WelcomePage()
+        .environmentObject(AuthViewModel())
 }
