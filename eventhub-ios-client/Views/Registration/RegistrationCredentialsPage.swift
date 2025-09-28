@@ -8,11 +8,17 @@
 import SwiftUI
 
 struct RegistrationCredentialsPage: View {
+    
     @Environment(\.presentationMode) var presentationMode
+    
     @State private var email: String = ""
     @State private var password: String = ""
     @State private var passwordCopy: String = ""
     @State private var showEmailVerification: Bool = false
+    
+    @State private var preRegisterResponse: RegistrationResponseDto? = nil
+    
+    @EnvironmentObject var authViewModel: AuthViewModel
     
     var body: some View {
         NavigationStack {
@@ -58,6 +64,14 @@ struct RegistrationCredentialsPage: View {
                 
                 GradientButton(title: "Продолжить", textColor: .white) {
                     if isValidEmail(email) && !password.isEmpty && password == passwordCopy {
+                        authViewModel.preRegister(email: email, password: password) { response in
+                            print(response)
+                            self.preRegisterResponse = response
+                            
+                            if response?.status == RegistrationStatus.pending.rawValue {
+                                authViewModel.sendCode(userId: response?.id ?? "")
+                            }
+                        }
                         showEmailVerification = true
                     }
                 }
@@ -67,7 +81,7 @@ struct RegistrationCredentialsPage: View {
             }
             .padding(16)
             .navigationDestination(isPresented: $showEmailVerification) {
-                RegistrationEmailVerificationPage(email: email)
+                RegistrationEmailVerificationPage(userId: preRegisterResponse?.id ?? "", email: email, password: password)
                     .navigationBarBackButtonHidden(true)
             }
         }

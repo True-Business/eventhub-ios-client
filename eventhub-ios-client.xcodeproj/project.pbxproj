@@ -6,6 +6,14 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		D36801512E884403003527B2 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = D3F1CCC62E87D6210091B508 /* Alamofire */; };
+		D3F1CCCE2E8839830091B508 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = D3F1CCCD2E8839830091B508 /* Alamofire */; };
+		D3F1CCD02E8839830091B508 /* AlamofireDynamic in Frameworks */ = {isa = PBXBuildFile; productRef = D3F1CCCF2E8839830091B508 /* AlamofireDynamic */; };
+		D3F1CCD22E8839920091B508 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = D3F1CCD12E8839920091B508 /* Alamofire */; };
+		D3F1CCD42E8839920091B508 /* AlamofireDynamic in Frameworks */ = {isa = PBXBuildFile; productRef = D3F1CCD32E8839920091B508 /* AlamofireDynamic */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		D36F4F122E769238004A16CA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -29,9 +37,22 @@
 		D36F4F1B2E769238004A16CA /* eventhub-ios-clientUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "eventhub-ios-clientUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		D36801992E884741003527B2 /* Exceptions for "eventhub-ios-client" folder in "eventhub-ios-client" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = D36F4F002E769236004A16CA /* eventhub-ios-client */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		D36F4F032E769236004A16CA /* eventhub-ios-client */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				D36801992E884741003527B2 /* Exceptions for "eventhub-ios-client" folder in "eventhub-ios-client" target */,
+			);
 			path = "eventhub-ios-client";
 			sourceTree = "<group>";
 		};
@@ -52,6 +73,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D36801512E884403003527B2 /* Alamofire in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -59,6 +81,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D3F1CCCE2E8839830091B508 /* Alamofire in Frameworks */,
+				D3F1CCD02E8839830091B508 /* AlamofireDynamic in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -66,6 +90,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D3F1CCD22E8839920091B508 /* Alamofire in Frameworks */,
+				D3F1CCD42E8839920091B508 /* AlamofireDynamic in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +138,7 @@
 			);
 			name = "eventhub-ios-client";
 			packageProductDependencies = (
+				D3F1CCC62E87D6210091B508 /* Alamofire */,
 			);
 			productName = "eventhub-ios-client";
 			productReference = D36F4F012E769236004A16CA /* eventhub-ios-client.app */;
@@ -135,6 +162,8 @@
 			);
 			name = "eventhub-ios-clientTests";
 			packageProductDependencies = (
+				D3F1CCCD2E8839830091B508 /* Alamofire */,
+				D3F1CCCF2E8839830091B508 /* AlamofireDynamic */,
 			);
 			productName = "eventhub-ios-clientTests";
 			productReference = D36F4F112E769238004A16CA /* eventhub-ios-clientTests.xctest */;
@@ -158,6 +187,8 @@
 			);
 			name = "eventhub-ios-clientUITests";
 			packageProductDependencies = (
+				D3F1CCD12E8839920091B508 /* Alamofire */,
+				D3F1CCD32E8839920091B508 /* AlamofireDynamic */,
 			);
 			productName = "eventhub-ios-clientUITests";
 			productReference = D36F4F1B2E769238004A16CA /* eventhub-ios-clientUITests.xctest */;
@@ -195,6 +226,9 @@
 			);
 			mainGroup = D36F4EF82E769236004A16CA;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				D3F1CCC52E87D5FB0091B508 /* XCRemoteSwiftPackageReference "Alamofire" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = D36F4F022E769236004A16CA /* Products */;
 			projectDirPath = "";
@@ -399,6 +433,7 @@
 				DEVELOPMENT_TEAM = F7YKZDRS5P;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "eventhub-ios-client/Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -428,6 +463,7 @@
 				DEVELOPMENT_TEAM = F7YKZDRS5P;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "eventhub-ios-client/Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -554,6 +590,45 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		D3F1CCC52E87D5FB0091B508 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Alamofire/Alamofire.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.10.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D3F1CCC62E87D6210091B508 /* Alamofire */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D3F1CCC52E87D5FB0091B508 /* XCRemoteSwiftPackageReference "Alamofire" */;
+			productName = Alamofire;
+		};
+		D3F1CCCD2E8839830091B508 /* Alamofire */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D3F1CCC52E87D5FB0091B508 /* XCRemoteSwiftPackageReference "Alamofire" */;
+			productName = Alamofire;
+		};
+		D3F1CCCF2E8839830091B508 /* AlamofireDynamic */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D3F1CCC52E87D5FB0091B508 /* XCRemoteSwiftPackageReference "Alamofire" */;
+			productName = AlamofireDynamic;
+		};
+		D3F1CCD12E8839920091B508 /* Alamofire */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D3F1CCC52E87D5FB0091B508 /* XCRemoteSwiftPackageReference "Alamofire" */;
+			productName = Alamofire;
+		};
+		D3F1CCD32E8839920091B508 /* AlamofireDynamic */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D3F1CCC52E87D5FB0091B508 /* XCRemoteSwiftPackageReference "Alamofire" */;
+			productName = AlamofireDynamic;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = D36F4EF92E769236004A16CA /* Project object */;
 }

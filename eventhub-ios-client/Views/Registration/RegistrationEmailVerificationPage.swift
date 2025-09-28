@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct RegistrationEmailVerificationPage: View {
-    let email: String
     
     @State private var verificationCode: String = ""
     @State private var showError: Bool = false
@@ -16,7 +15,19 @@ struct RegistrationEmailVerificationPage: View {
     @State private var countdown: Int = 60
     @State private var navigateNext: Bool = false
     
+    @EnvironmentObject var authViewModel: AuthViewModel
+    
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    
+    private let userId: String
+    private let email: String
+    private let password: String
+    
+    init(userId: String, email: String, password: String) {
+        self.userId = userId
+        self.email = email
+        self.password = password
+    }
     
     var body: some View {
         NavigationStack {
@@ -50,8 +61,12 @@ struct RegistrationEmailVerificationPage: View {
                 
                 GradientButton(title: "Подтвердить", textColor: .white) {
                     if verificationCode.count == 4 {
-                        // TODO: добавить логику проверки корректности введёного кода
-                        navigateNext = true
+                        authViewModel.verifyEmailVerificationCode(code: verificationCode) { response in
+                            if response != nil {
+                                print("User with email \(email) was successfuly verified!")
+                                navigateNext = true
+                            }
+                        }
                     } else {
                         showError = true
                     }
@@ -75,8 +90,8 @@ struct RegistrationEmailVerificationPage: View {
                 Spacer()
             }
             .navigationDestination(isPresented: $navigateNext) {
-                RegistrationUserPersonalDataPage()
-                    .navigationBarBackButtonHidden(true)
+                // TODO: добавить стилизованную кнопку "Назад"
+                RegistrationUserPersonalDataPage(userId: userId, email: email, password: password)
             }
             .padding(24)
             .onReceive(timer) { _ in

@@ -8,14 +8,24 @@
 import SwiftUI
 
 struct RegistrationUserPersonalDataPage: View {
-    @State private var displayName: String = ""
+    @State private var shortId: String = ""
     @State private var username: String = ""
-    @State private var isUsernameValid: Bool = true
+    @State private var isShortIdValid: Bool = true
     @State private var showAlert: Bool = false
     @State private var alertMessage: String = ""
     @State private var navigateNext: Bool = false
     
     @EnvironmentObject var authViewModel: AuthViewModel
+    
+    private let userId: String
+    private let email: String
+    private let password: String
+    
+    init(userId: String, email: String, password: String) {
+        self.userId = userId
+        self.email = email
+        self.password = password
+    }
     
     var body: some View {
         NavigationStack {
@@ -24,7 +34,7 @@ struct RegistrationUserPersonalDataPage: View {
                     .font(.title)
                     .padding(.bottom, 8)
                 
-                TextField("Как вас зовут", text: $displayName)
+                TextField("Как вас зовут", text: $username)
                     .padding()
                     .background(Color(.secondarySystemBackground))
                     .cornerRadius(8)
@@ -37,11 +47,11 @@ struct RegistrationUserPersonalDataPage: View {
                 HStack {
                     Text("@")
                         .foregroundColor(.gray)
-                    TextField("Короткое имя (например, ivanov)", text: $username)
+                    TextField("Короткое имя (например, ivanov)", text: $shortId)
                         .autocapitalization(.none)
                         .disableAutocorrection(true)
-                        .onChange(of: username) { oldValue, newValue in
-                            isUsernameValid = newValue.range(of: "^[a-zA-Z0-9]+$", options: .regularExpression) != nil
+                        .onChange(of: shortId) { oldValue, newValue in
+                            isShortIdValid = newValue.range(of: "^[a-zA-Z0-9]+$", options: .regularExpression) != nil
                         }
                 }
                 .padding()
@@ -49,11 +59,11 @@ struct RegistrationUserPersonalDataPage: View {
                 .cornerRadius(8)
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)
-                        .stroke(isUsernameValid ? Color.black : Color.red, lineWidth: 1)
+                        .stroke(isShortIdValid ? Color.black : Color.red, lineWidth: 1)
                 )
                 
-                if !isUsernameValid {
-                    Text("Имя может содержать только буквы и цифры")
+                if !isShortIdValid {
+                    Text("Имя может содержать только буквы и цифры!")
                         .foregroundColor(.red)
                         .font(.caption)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -63,18 +73,25 @@ struct RegistrationUserPersonalDataPage: View {
                 Spacer().frame(height: 24)
                 
                 GradientButton(title: "Продолжить", textColor: .white) {
-                    if displayName.isBlank {
-                        alertMessage = "Введите ваше имя"
+                    if username.isBlank {
+                        alertMessage = "Введите ваше имя!"
                         showAlert = true
                         return
                     }
-                    if !isUsernameValid || username.isBlank {
-                        alertMessage = "Некорректное имя пользователя"
+                    
+                    if shortId.isBlank || !isShortIdValid {
+                        alertMessage = "Введите корректное коротке имя!"
                         showAlert = true
                         return
                     }
-                    // TODO: сохранить данные
-                    navigateNext = true
+                    
+                    authViewModel.postRegister(userId: userId, email: email, username: username, shortId: shortId) { res in
+                        if res != nil {
+                            navigateNext = true
+                        } else {
+                            alertMessage = "Не удалось сохранить данные! Попробуйте еще раз."
+                        }
+                    }
                 }
             }
             .navigationDestination(isPresented: $navigateNext) {
@@ -93,4 +110,9 @@ extension String {
     var isBlank: Bool {
         self.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
+}
+
+
+#Preview {
+    RegistrationUserPersonalDataPage(userId: "", email: "", password: "")
 }

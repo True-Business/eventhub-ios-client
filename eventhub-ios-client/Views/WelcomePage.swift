@@ -64,17 +64,14 @@ struct WelcomePage: View {
                     showRegistration = true
                 }
                                 
-                Button(action: {
-                    authViewModel.isLoggedIn = true
-                    authViewModel.isLoggedInAnonymously = true
-                }) {
+                Button(action: {}) {
                     Text("Войти анонимно")
                         .foregroundColor(.black)
                         .frame(maxWidth: .infinity)
                         .padding()
                 }
             }
-            .navigationDestination(isPresented: $authViewModel.isLoggedIn) {
+            .navigationDestination(isPresented: authViewModel.isLoggedInBinding) {
                 MainPage()
                     .navigationBarBackButtonHidden(true)
             }
