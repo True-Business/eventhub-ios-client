@@ -64,14 +64,16 @@ struct WelcomePage: View {
                     showRegistration = true
                 }
                                 
-                Button(action: {}) {
+                Button(action: {
+                    authViewModel.loginAnonymously()
+                }) {
                     Text("Войти анонимно")
                         .foregroundColor(.black)
                         .frame(maxWidth: .infinity)
                         .padding()
                 }
             }
-            .navigationDestination(isPresented: authViewModel.isLoggedInBinding) {
+            .navigationDestination(isPresented: $authViewModel.isLoggedIn) {
                 MainPage()
                     .navigationBarBackButtonHidden(true)
             }
@@ -88,7 +90,7 @@ struct WelcomePage: View {
     }
 }
 
-#Preview {
-    WelcomePage()
-        .environmentObject(AuthViewModel())
-}
+//#Preview {
+//    WelcomePage()
+//        .environmentObject(AuthViewModel())
+//}

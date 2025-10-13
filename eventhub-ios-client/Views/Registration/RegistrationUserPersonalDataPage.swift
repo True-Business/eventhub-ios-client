@@ -85,7 +85,9 @@ struct RegistrationUserPersonalDataPage: View {
                         return
                     }
                     
-                    authViewModel.postRegister(userId: userId, email: email, username: username, shortId: shortId) { res in
+                    authViewModel.postRegister(
+                        userId: userId, email: email, password: password, username: username, shortId: shortId
+                    ) { res in
                         if res != nil {
                             navigateNext = true
                         } else {

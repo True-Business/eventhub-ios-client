@@ -14,7 +14,7 @@ protocol AuthApi {
     
     func verifyConfirmationCode(code: String, completion: @escaping (Result<RegistrationResponseDto, AFError>) -> Void)
     
-    func postRegister(dto: UserInfoRegistrationDto, completion: @escaping (Result<RegistrationResponseDto, AFError>) -> Void)
+    func postRegister(email: String, password: String, dto: UserInfoRegistrationDto, completion: @escaping (Result<RegistrationResponseDto, AFError>) -> Void)
 }
 
 class AuthApiImpl: AuthApi {
@@ -59,12 +59,13 @@ class AuthApiImpl: AuthApi {
             }
     }
     
-    func postRegister(dto: UserInfoRegistrationDto, completion: @escaping (Result<RegistrationResponseDto, AFError>) -> Void) {
+    func postRegister(email: String, password: String, dto: UserInfoRegistrationDto, completion: @escaping (Result<RegistrationResponseDto, AFError>) -> Void) {
         let url = baseURL + "api/v1/auth/add-info"
         session.request(url,
                         method: .post,
                         parameters: dto,
                         encoder: JSONParameterEncoder.default)
+            .authenticate(username: email, password: password)
             .validate()
             .responseDecodable(of: RegistrationResponseDto.self) { response in
                 completion(response.result)

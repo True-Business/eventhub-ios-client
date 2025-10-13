@@ -52,6 +52,8 @@ class AuthRepository {
     // TODO: здесь уже нужно передавать почту и пароль чтобы сделать запрос
     func postRegister(
         id: String,
+        email: String,
+        password: String,
         username: String,
         shortId: String,
         completion: @escaping (Result<RegistrationResponseDto, Error>) -> Void
@@ -59,7 +61,7 @@ class AuthRepository {
         print("Adding user personal info. id: \(id), username: \(username), shortId: \(shortId)")
         
         let dto = UserInfoRegistrationDto(id: id, username: username, shortId: shortId)
-        authApi.postRegister(dto: dto) { result in
+        authApi.postRegister(email: email, password: password, dto: dto) { result in
             switch result {
                 case .success(let response):
                     print("postRegister response: \(response)")
