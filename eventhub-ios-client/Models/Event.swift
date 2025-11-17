@@ -14,5 +14,5 @@ struct Event: Identifiable {
     let startDate: String
     let endDate: String
     let location: String
-    let posterUrl: Int
+    let posterUrl: String
 }
