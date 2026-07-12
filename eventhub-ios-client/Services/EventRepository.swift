@@ -7,24 +7,60 @@
 import Foundation
 
 class EventRepository {
-    // Возвращает заготовленные данные для тестирования с фильтром по категории
-    func fetchEventsMock(category: EventCategory = .all, completion: @escaping ([Event]?) -> Void) {
-        let filtered = mockEventList.filter { $0.category.contains(category) }
-        completion(filtered)
+    private let eventApi: EventApi
+
+    init(eventApi: EventApi = ApiProvider.shared.eventApi) {
+        self.eventApi = eventApi
     }
-    
+
+    func fetchEvents(category: EventCategory = .all, completion: @escaping (Result<[Event], Error>) -> Void) {
+        let filter = EventSearchFilterDto(
+            city: nil,
+            minPrice: nil,
+            maxPrice: nil,
+            startDateTime: nil,
+            minDurationMinutes: nil,
+            maxDurationMinutes: nil,
+            organizerId: nil,
+            isParticipant: nil,
+            category: category == .all ? nil : category.rawValue,
+            isOpen: nil
+        )
+
+        eventApi.searchEvents(filter: filter) { result in
+            switch result {
+            case .success(let dtos):
+                completion(.success(dtos.map { $0.toDomainEvent() }))
+            case .failure:
+                self.eventApi.getEvents(category: category) { fallbackResult in
+                    completion(fallbackResult.map { $0.map { $0.toDomainEvent() } }.mapError { $0 })
+                }
+            }
+        }
+    }
+
     // Возвращает мок-мероприятие по id
     func fetchEventMock(eventId: String) -> Event? {
         mockEventList.first { $0.id.uuidString == eventId }
     }
-    
-    // Поиск мероприятий по query (мок)
-    func searchMockEvents(query: String, completion: @escaping ([Event]?) -> Void) {
+
+    func searchEvents(query: String, completion: @escaping (Result<[Event], Error>) -> Void) {
         let query = query.trimmed
-        let filtered = mockEventList.filter { event in
-            event.title.localizedCaseInsensitiveContains(query)
-                || event.content.localizedCaseInsensitiveContains(query)
+
+        fetchEvents { result in
+            completion(result.map { events in
+                events.filter { event in
+                    event.title.localizedCaseInsensitiveContains(query)
+                        || event.content.localizedCaseInsensitiveContains(query)
+                        || event.location.localizedCaseInsensitiveContains(query)
+                }
+            })
         }
-        completion(filtered)
+    }
+
+    func createEvent(_ event: Event, completion: @escaping (Result<Event, Error>) -> Void) {
+        eventApi.createEvent(dto: event.toCreateUpdateDto()) { result in
+            completion(result.map { $0.toDomainEvent() }.mapError { $0 })
+        }
     }
 }

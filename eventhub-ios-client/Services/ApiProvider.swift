@@ -11,11 +11,11 @@ class ApiProvider {
     private let config: AlamofireConfig
     
     let authApi: AuthApi
-    // let eventApi: EventApi
+    let eventApi: EventApi
     
     private init() {
         self.config = .shared
         self.authApi = AuthApiImpl(config: config)
-        // self.eventApi = EventApiImpl(config: config)
+        self.eventApi = EventApiImpl(config: config)
     }
 }

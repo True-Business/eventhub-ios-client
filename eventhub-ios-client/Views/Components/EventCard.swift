@@ -14,7 +14,7 @@ struct EventCard: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            AsyncImage(url: URL(string: "https://picsum.photos/600/300?random=\(event.id)")) { image in
+            AsyncImage(url: URL(string: event.posterUrl.isEmpty ? "https://picsum.photos/600/300?random=\(event.id)" : event.posterUrl)) { image in
                 image
                     .resizable()
                     .scaledToFill()
