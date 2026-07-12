@@ -9,6 +9,7 @@ import SwiftUI
 struct UserProfilePage: View {
     
     @Environment(\.presentationMode) var presentationMode
+    @EnvironmentObject var authViewModel: AuthViewModel
 
     @State private var aboutText: String = "Вы только что начали читать текст, который сейчас заканичваете читать."
     @State private var isEditing: Bool = false
@@ -22,10 +23,10 @@ struct UserProfilePage: View {
                 .clipShape(Circle())
                 .shadow(radius: 4)
             
-            Text("John Doe")
+            Text(displayName)
                 .font(.title2)
                 .bold()
-            Text("@hihihaha")
+            Text(displayShortId)
                 .foregroundColor(.gray)
             
             Divider()
@@ -76,8 +77,23 @@ struct UserProfilePage: View {
             .ignoresSafeArea()
         )
     }
+
+    private var displayName: String {
+        authViewModel.username?.trimmed.isEmpty == false
+            ? authViewModel.username ?? ""
+            : "Гость"
+    }
+
+    private var displayShortId: String {
+        guard let shortId = authViewModel.userShortId?.trimmed, !shortId.isEmpty else {
+            return "@guest"
+        }
+
+        return shortId.hasPrefix("@") ? shortId : "@\(shortId)"
+    }
 }
 
 #Preview {
     UserProfilePage()
+        .environmentObject(AuthViewModel())
 }

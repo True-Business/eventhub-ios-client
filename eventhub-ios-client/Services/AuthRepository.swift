@@ -13,6 +13,19 @@ class AuthRepository {
     init(authApi: AuthApi = ApiProvider.shared.authApi) {
         self.authApi = authApi
     }
+
+    func login(email: String, password: String, completion: @escaping (Result<LoginUserDto, Error>) -> Void) {
+        let dto = UserCredentialsRegistrationDto(email: email, password: password)
+        authApi.login(dto: dto) { result in
+            switch result {
+                case .success(let response):
+                    print("login success: \(response)")
+                    completion(.success(response))
+                case .failure(let error):
+                    completion(.failure(error))
+            }
+        }
+    }
     
     func preRegister(email: String, password: String, completion: @escaping (Result<RegistrationResponseDto, Error>) -> Void) {
         

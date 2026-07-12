@@ -10,7 +10,7 @@ import Alamofire
 class AlamofireConfig {
     static let shared = AlamofireConfig()
     
-    private let baseURL = "http://eventhub-backend.ru/prod/"
+    private let baseURL = "http://localhost:8080/"
     private let session: Session
     
     private init() {

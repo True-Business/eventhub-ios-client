@@ -40,8 +40,14 @@ struct WelcomePage: View {
                     if email.isValidEmail && !password.isEmpty {
                         authViewModel.login(email: email, password: password)
                     } else {
+                        authViewModel.errorMessage = nil
                         showError = true
                     }
+                }
+                .disabled(authViewModel.loading)
+
+                if authViewModel.loading {
+                    ProgressView()
                 }
                 
                 HStack {
@@ -82,9 +88,14 @@ struct WelcomePage: View {
                         .navigationBarBackButtonHidden(true)
                 }
             .alert("Ошибка", isPresented: $showError) {
-                Button("Ок", role: .cancel) { }
+                Button("Ок", role: .cancel) {
+                    authViewModel.errorMessage = nil
+                }
             } message: {
-                Text("Введите корректный email и пароль")
+                Text(authViewModel.errorMessage ?? "Введите корректный email и пароль")
+            }
+            .onChange(of: authViewModel.errorMessage) { _, newValue in
+                showError = newValue != nil
             }
         }
     }

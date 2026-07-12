@@ -5,8 +5,9 @@
 //  Created by Эдуард Вартазарян on 14.09.2025.
 //
 import SwiftUI
+import Alamofire
 
-
+// TODO: перенести сохранение ключей в кейчейн
 class AuthViewModel: ObservableObject {
     
     // Ключи для UserDefault
@@ -40,12 +41,36 @@ class AuthViewModel: ObservableObject {
         self.currentUserId = defaults.string(forKey: Keys.userId)
         self.username = defaults.string(forKey: Keys.username)
         self.userShortId = defaults.string(forKey: Keys.shortId)
+        self.password = defaults.string(forKey: Keys.password)
     }
     
     func login(email: String, password: String) {
-        // TODO: подключить реальный API логина, когда backend будет готов.
-        print("Login is not implemented yet for email=\(email)")
-        errorMessage = "Вход по email пока не реализован"
+        errorMessage = nil
+        setLoading(true)
+
+        authRepository.login(email: email, password: password) { [weak self] result in
+            DispatchQueue.main.async {
+                self?.setLoading(false)
+
+                switch result {
+                case .success(let user):
+                    guard user.isConfirmed else {
+                        self?.errorMessage = "Email не подтвержден"
+                        return
+                    }
+
+                    self?.saveSession(
+                        userId: user.id,
+                        email: email,
+                        password: password,
+                        username: user.username,
+                        shortId: user.shortId
+                    )
+                case .failure(let error):
+                    self?.handle(error)
+                }
+            }
+        }
     }
     
     func loginAnonymously() {
@@ -125,7 +150,7 @@ class AuthViewModel: ObservableObject {
                 self?.setLoading(false)
                 switch result {
                 case .success(let res):
-                    self?.saveSession(userId: res.id, email: email, username: username, shortId: shortId)
+                    self?.saveSession(userId: res.id, email: email, password: password, username: username, shortId: shortId)
                     completion(res.id)
                 case .failure(let error):
                     self?.handle(error)
@@ -135,9 +160,10 @@ class AuthViewModel: ObservableObject {
         }
     }
     
-    private func saveSession(userId: String, email: String, username: String, shortId: String) {
+    private func saveSession(userId: String, email: String, password: String, username: String, shortId: String) {
         currentUserId = userId
         self.username = username
+        self.password = password
         userShortId = shortId
         currentUserEmail = email
         isLoggedIn = true
@@ -145,6 +171,7 @@ class AuthViewModel: ObservableObject {
 
         defaults.set(username, forKey: Keys.username)
         defaults.set(email, forKey: Keys.email)
+        defaults.set(password, forKey: Keys.password)
         defaults.set(userId, forKey: Keys.userId)
         defaults.set(shortId, forKey: Keys.shortId)
         defaults.set(true, forKey: Keys.isLoggedIn)
@@ -166,7 +193,21 @@ class AuthViewModel: ObservableObject {
     }
 
     private func handle(_ error: Error) {
-        errorMessage = error.localizedDescription
+        if let afError = error as? AFError, let statusCode = afError.responseCode {
+            switch statusCode {
+            case 401:
+                errorMessage = "Неверный email или пароль"
+            case 404:
+                errorMessage = "Пользователь не найден"
+            case 409:
+                errorMessage = "Пользователь с такими данными уже существует"
+            default:
+                errorMessage = "Ошибка сервера: \(statusCode)"
+            }
+        } else {
+            errorMessage = error.localizedDescription
+        }
+
         print(error.localizedDescription)
     }
 }
