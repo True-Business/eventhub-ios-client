@@ -10,6 +10,6 @@ import Foundation
 class OrgRepository {
     
     func fetchOrganizationMock(orgId: UUID) -> Organization? {
-        return mockOrganization;
+        mockOrganization
     }
 }

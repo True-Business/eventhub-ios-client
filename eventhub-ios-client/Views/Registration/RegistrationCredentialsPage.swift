@@ -15,6 +15,8 @@ struct RegistrationCredentialsPage: View {
     @State private var password: String = ""
     @State private var passwordCopy: String = ""
     @State private var showEmailVerification: Bool = false
+    @State private var showError: Bool = false
+    @State private var errorMessage: String = ""
     
     @State private var preRegisterResponse: RegistrationResponseDto? = nil
     
@@ -63,15 +65,21 @@ struct RegistrationCredentialsPage: View {
                 Spacer().frame(height: 16)
                 
                 GradientButton(title: "Продолжить", textColor: .white) {
-                    if isValidEmail(email) && !password.isEmpty && password == passwordCopy {
-                        authViewModel.preRegister(email: email, password: password) { response in
-                            print(response)
-                            self.preRegisterResponse = response
-                            
-                            if response?.status == RegistrationStatus.pending.rawValue {
-                                authViewModel.sendCode(userId: response?.id ?? "")
-                            }
+                    guard validateForm() else {
+                        showError = true
+                        return
+                    }
+
+                    authViewModel.preRegister(email: email, password: password) { response in
+                        preRegisterResponse = response
+
+                        guard response?.status == RegistrationStatus.pending.rawValue else {
+                            errorMessage = response?.reason ?? "Не удалось начать регистрацию"
+                            showError = true
+                            return
                         }
+
+                        authViewModel.sendCode(userId: response?.id ?? "")
                         showEmailVerification = true
                     }
                 }
@@ -84,13 +92,30 @@ struct RegistrationCredentialsPage: View {
                 RegistrationEmailVerificationPage(userId: preRegisterResponse?.id ?? "", email: email, password: password)
                     .navigationBarBackButtonHidden(true)
             }
+            .alert("Ошибка", isPresented: $showError) {
+                Button("Ок", role: .cancel) { }
+            } message: {
+                Text(errorMessage)
+            }
         }
     }
-    
-    // Простейшая проверка email
-    func isValidEmail(_ email: String) -> Bool {
-        let emailFormat = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}"
-        let emailPredicate = NSPredicate(format:"SELF MATCHES %@", emailFormat)
-        return emailPredicate.evaluate(with: email)
+
+    private func validateForm() -> Bool {
+        if !email.isValidEmail {
+            errorMessage = "Введите корректный email"
+            return false
+        }
+
+        if password.isEmpty {
+            errorMessage = "Введите пароль"
+            return false
+        }
+
+        if password != passwordCopy {
+            errorMessage = "Пароли не совпадают"
+            return false
+        }
+
+        return true
     }
 }

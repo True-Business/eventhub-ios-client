@@ -74,8 +74,7 @@ struct RegistrationEmailVerificationPage: View {
                 
                 Button(action: {
                     if isResendEnabled {
-                        // TODO: добавить логику повторной отправки кода
-                        print("Код отправлен повторно")
+                        authViewModel.sendCode(userId: userId)
                         isResendEnabled = false
                         countdown = 60
                     }
@@ -90,7 +89,6 @@ struct RegistrationEmailVerificationPage: View {
                 Spacer()
             }
             .navigationDestination(isPresented: $navigateNext) {
-                // TODO: добавить стилизованную кнопку "Назад"
                 RegistrationUserPersonalDataPage(userId: userId, email: email, password: password)
             }
             .padding(24)

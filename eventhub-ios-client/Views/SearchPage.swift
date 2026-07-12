@@ -8,7 +8,7 @@ import SwiftUI
 
 struct SearchPage: View {
     
-    @ObservedObject var eventsViewModel: EventsViewModel = EventsViewModel()
+    @StateObject private var eventsViewModel = EventsViewModel()
     
     @State private var searchQuery: String = ""
     
@@ -51,8 +51,10 @@ struct SearchPage: View {
                 .padding(.horizontal, 12)
                 .padding(.top, 8)
                 .onChange(of: searchQuery) { oldValue, newValue in
-                    if newValue.count > 2 {
+                    if newValue.trimmed.count > 2 {
                         eventsViewModel.searchEvents(query: newValue)
+                    } else {
+                        eventsViewModel.clearSearch()
                     }
                 }
             
@@ -61,7 +63,7 @@ struct SearchPage: View {
                 ProgressView()
                 Spacer()
             } else {
-                List(eventsViewModel.events) { event in
+                List(eventsViewModel.searchResults) { event in
                     EventCard(event: event)
                         .onTapGesture {
                             // TODO: (e.vartazaryan 14.09.2025) сделать логику перехода на страницу мероприятия

@@ -55,12 +55,14 @@ struct MainPage: View {
                                 withAnimation {
                                     showSearch = false
                                     searchText = ""
-                                    viewModel.searchResults.removeAll()
+                                    viewModel.clearSearch()
                                 }
                             }
                             .onChange(of: searchText) { oldValue, newValue in
-                                if !newValue.isEmpty {
+                                if !newValue.trimmed.isEmpty {
                                     viewModel.searchEvents(query: newValue)
+                                } else {
+                                    viewModel.clearSearch()
                                 }
                             }
                         }

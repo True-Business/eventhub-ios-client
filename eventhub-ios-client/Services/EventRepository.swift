@@ -7,8 +7,6 @@
 import Foundation
 
 class EventRepository {
-    
-    
     // Возвращает заготовленные данные для тестирования с фильтром по категории
     func fetchEventsMock(category: EventCategory = .all, completion: @escaping ([Event]?) -> Void) {
         let filtered = mockEventList.filter { $0.category.contains(category) }
@@ -17,12 +15,16 @@ class EventRepository {
     
     // Возвращает мок-мероприятие по id
     func fetchEventMock(eventId: String) -> Event? {
-        return mockEventList.first { $0.id.uuidString == eventId }
+        mockEventList.first { $0.id.uuidString == eventId }
     }
     
     // Поиск мероприятий по query (мок)
     func searchMockEvents(query: String, completion: @escaping ([Event]?) -> Void) {
-        let filtered = mockEventList.filter { $0.title.localizedCaseInsensitiveContains(query) }
+        let query = query.trimmed
+        let filtered = mockEventList.filter { event in
+            event.title.localizedCaseInsensitiveContains(query)
+                || event.content.localizedCaseInsensitiveContains(query)
+        }
         completion(filtered)
     }
 }

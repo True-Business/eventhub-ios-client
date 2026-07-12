@@ -5,18 +5,19 @@
 //  Created by Эдуард Вартазарян on 14.09.2025.
 //
 import Foundation
-import Combine
 
 class EventsViewModel: ObservableObject {
     
-    private let repository = EventRepository()
+    private let repository: EventRepository
         
     @Published var events: [Event] = []
     @Published var searchResults: [Event] = []
     @Published var isLoading: Bool = false
     @Published var selectedCategory: EventCategory = .all
         
-    private var cancellables = Set<AnyCancellable>()
+    init(repository: EventRepository = EventRepository()) {
+        self.repository = repository
+    }
     
     func loadEvents() {
         if isLoading { return }
@@ -36,6 +37,12 @@ class EventsViewModel: ObservableObject {
     }
     
     func searchEvents(query: String) {
+        let query = query.trimmed
+        guard !query.isEmpty else {
+            searchResults = []
+            return
+        }
+
         if isLoading { return }
         
         isLoading = true
@@ -44,10 +51,12 @@ class EventsViewModel: ObservableObject {
         repository.searchMockEvents(query: query) { [weak self] newEvents in
             DispatchQueue.main.async {
                 self?.isLoading = false
-                if let newEvents = newEvents {
-                    self?.searchResults = newEvents
-                }
+                self?.searchResults = newEvents ?? []
             }
         }
+    }
+
+    func clearSearch() {
+        searchResults = []
     }
 }

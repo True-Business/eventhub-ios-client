@@ -51,7 +51,7 @@ struct RegistrationUserPersonalDataPage: View {
                         .autocapitalization(.none)
                         .disableAutocorrection(true)
                         .onChange(of: shortId) { oldValue, newValue in
-                            isShortIdValid = newValue.range(of: "^[a-zA-Z0-9]+$", options: .regularExpression) != nil
+                            isShortIdValid = newValue.isValidShortId
                         }
                 }
                 .padding()
@@ -107,13 +107,6 @@ struct RegistrationUserPersonalDataPage: View {
         }
     }
 }
-
-extension String {
-    var isBlank: Bool {
-        self.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-    }
-}
-
 
 #Preview {
     RegistrationUserPersonalDataPage(userId: "", email: "", password: "")

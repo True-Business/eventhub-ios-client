@@ -37,7 +37,7 @@ struct WelcomePage: View {
                     .cornerRadius(8)
                 
                 GradientButton(title: "Войти", textColor: .black) {
-                    if isValidEmail(email) && !password.isEmpty {
+                    if email.isValidEmail && !password.isEmpty {
                         authViewModel.login(email: email, password: password)
                     } else {
                         showError = true
@@ -81,12 +81,12 @@ struct WelcomePage: View {
                     RegistrationCredentialsPage()
                         .navigationBarBackButtonHidden(true)
                 }
+            .alert("Ошибка", isPresented: $showError) {
+                Button("Ок", role: .cancel) { }
+            } message: {
+                Text("Введите корректный email и пароль")
+            }
         }
-    }
-    
-    func isValidEmail(_ email: String) -> Bool {
-        let regex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}"
-        return NSPredicate(format: "SELF MATCHES %@", regex).evaluate(with: email)
     }
 }
 
