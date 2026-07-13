@@ -27,6 +27,8 @@ struct EventDto: Decodable {
     let participantsCount: Int?
     let userParticipant: Bool?
     let owner: Bool?
+    let posterUrl: String?
+    let imageUrls: [String]?
 
     private enum CodingKeys: String, CodingKey {
         case id
@@ -54,6 +56,14 @@ struct EventDto: Decodable {
         case isUserParticipant
         case owner
         case isOwner
+        case posterUrl
+        case posterURL
+        case imageUrls
+        case imageURLs
+        case images
+        case pictures
+        case presignedUrls
+        case presignedURLs
     }
 
     init(from decoder: Decoder) throws {
@@ -84,6 +94,25 @@ struct EventDto: Decodable {
             ?? container.decodeIfPresent(Bool.self, forKey: .isUserParticipant)
         owner = try container.decodeIfPresent(Bool.self, forKey: .owner)
             ?? container.decodeIfPresent(Bool.self, forKey: .isOwner)
+        posterUrl = try container.decodeIfPresent(String.self, forKey: .posterUrl)
+            ?? container.decodeIfPresent(String.self, forKey: .posterURL)
+        imageUrls = try Self.decodeFirstStringArray(
+            from: container,
+            keys: [.imageUrls, .imageURLs, .images, .pictures, .presignedUrls, .presignedURLs]
+        )
+    }
+
+    private static func decodeFirstStringArray(
+        from container: KeyedDecodingContainer<CodingKeys>,
+        keys: [CodingKeys]
+    ) throws -> [String]? {
+        for key in keys {
+            if let values = try container.decodeIfPresent([String].self, forKey: key) {
+                return values
+            }
+        }
+
+        return nil
     }
 }
 
@@ -144,6 +173,10 @@ extension EventDto {
         let location = [address, route, city]
             .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
             .joined(separator: ", ")
+        let cleanImageUrls = (imageUrls ?? [])
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+        let cleanPosterUrl = posterUrl?.trimmingCharacters(in: .whitespacesAndNewlines) ?? cleanImageUrls.first ?? ""
 
         return Event(
             id: UUID(uuidString: id) ?? UUID(),
@@ -153,7 +186,8 @@ extension EventDto {
             startDate: startDateTime,
             endDate: endDateTime,
             location: location.isEmpty ? city : location,
-            posterUrl: "",
+            posterUrl: cleanPosterUrl,
+            imageUrls: cleanImageUrls,
             organizerId: organizerId.flatMap(UUID.init(uuidString:)),
             organizationId: organizationId.flatMap(UUID.init(uuidString:)),
             updatedAt: updatedAt,

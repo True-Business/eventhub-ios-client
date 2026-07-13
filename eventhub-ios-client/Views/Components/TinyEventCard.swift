@@ -17,17 +17,9 @@ struct TinyEventCard: View {
         VStack(alignment: .leading, spacing: 8) {
             ZStack {
                 // Постер организации
-                AsyncImage(url: URL(string: event.posterUrl)) { image in
-                    image
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 160, height: 160)
-                        .clipShape(RoundedRectangle(cornerRadius: 18))
-                } placeholder: {
-                    Color.gray.opacity(0.3)
-                        .frame(width: 160, height: 160)
-                        .clipShape(RoundedRectangle(cornerRadius: 18))
-                }
+                EventPosterImage(urlString: event.posterUrl, height: 160)
+                    .frame(width: 160, height: 160)
+                    .clipShape(RoundedRectangle(cornerRadius: 18))
                 .shadow(radius: 5)
                 
                 // Кнопка блокировки в режиме редактирования

@@ -15,6 +15,7 @@ struct Event: Identifiable {
     let endDate: String
     let location: String
     let posterUrl: String
+    let imageUrls: [String]
     let organizerId: UUID?
     let organizationId: UUID?
     let updatedAt: String?
@@ -41,6 +42,7 @@ struct Event: Identifiable {
         endDate: String,
         location: String,
         posterUrl: String,
+        imageUrls: [String] = [],
         organizerId: UUID? = nil,
         organizationId: UUID? = nil,
         updatedAt: String? = nil,
@@ -66,6 +68,7 @@ struct Event: Identifiable {
         self.endDate = endDate
         self.location = location
         self.posterUrl = posterUrl
+        self.imageUrls = imageUrls
         self.organizerId = organizerId
         self.organizationId = organizationId
         self.updatedAt = updatedAt

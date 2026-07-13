@@ -12,10 +12,12 @@ class ApiProvider {
     
     let authApi: AuthApi
     let eventApi: EventApi
+    let storageApi: StorageApi
     
     private init() {
         self.config = .shared
         self.authApi = AuthApiImpl(config: config)
         self.eventApi = EventApiImpl(config: config)
+        self.storageApi = StorageApiImpl(config: config)
     }
 }

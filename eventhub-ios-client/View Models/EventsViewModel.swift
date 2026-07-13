@@ -89,6 +89,27 @@ class EventsViewModel: ObservableObject {
         searchResults.removeAll { $0.id == event.id }
     }
 
+    func loadEvent(
+        eventId: UUID,
+        replaceInLists: Bool = true,
+        completion: @escaping (Result<Event, Error>) -> Void
+    ) {
+        repository.fetchEvent(eventId: eventId) { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let event):
+                    if replaceInLists {
+                        self?.replaceEvent(event)
+                    }
+                    completion(.success(event))
+                case .failure(let error):
+                    self?.errorMessage = error.localizedDescription
+                    completion(.failure(error))
+                }
+            }
+        }
+    }
+
     func deleteEvent(_ event: Event, completion: @escaping (Result<Void, Error>) -> Void) {
         repository.deleteEvent(eventId: event.id) { [weak self] result in
             DispatchQueue.main.async {
@@ -175,6 +196,7 @@ class EventsViewModel: ObservableObject {
         category: EventCategory,
         status: EventStatus,
         organizerId: String?,
+        imageUploads: [EventImageUpload] = [],
         completion: @escaping (Bool) -> Void
     ) {
         guard !isLoading else {
@@ -230,7 +252,7 @@ class EventsViewModel: ObservableObject {
         isLoading = true
         errorMessage = nil
 
-        repository.createEvent(event) { [weak self] result in
+        repository.createEvent(event, images: imageUploads) { [weak self] result in
             DispatchQueue.main.async {
                 self?.isLoading = false
                 switch result {

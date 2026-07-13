@@ -19,6 +19,8 @@ struct EventPage: View {
     @State private var participantsError: String?
     @State private var isLoadingParticipants = false
     @State private var showParticipants = false
+    @State private var isLoadingEventDetails = false
+    @State private var eventDetailsError: String?
 
     init(event: Event, eventsViewModel: EventsViewModel) {
         self.eventsViewModel = eventsViewModel
@@ -28,6 +30,7 @@ struct EventPage: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
+                EventImagesSection(imageUrls: event.detailImageUrls)
                 EventMainInfoSection(event: event) {
                     openParticipants()
                 }
@@ -105,6 +108,27 @@ struct EventPage: View {
         } message: {
             Text("Мероприятие будет удалено для всех пользователей.")
         }
+        .task {
+            loadEventDetails()
+        }
+    }
+
+    private func loadEventDetails() {
+        guard !isLoadingEventDetails else { return }
+
+        isLoadingEventDetails = true
+        eventDetailsError = nil
+
+        eventsViewModel.loadEvent(eventId: event.id, replaceInLists: false) { result in
+            isLoadingEventDetails = false
+
+            switch result {
+            case .success(let loadedEvent):
+                event = loadedEvent
+            case .failure(let error):
+                eventDetailsError = error.localizedDescription
+            }
+        }
     }
 
     private func setParticipation(_ shouldParticipate: Bool) {
@@ -163,6 +187,65 @@ struct EventPage: View {
             case .failure(let error):
                 participants = []
                 participantsError = error.localizedDescription
+            }
+        }
+    }
+}
+
+private struct EventImagesSection: View {
+    let imageUrls: [String]
+    @State private var selectedImageIndex = 0
+    @State private var showFullScreenImage = false
+
+    var body: some View {
+        if !imageUrls.isEmpty {
+            VStack(alignment: .leading, spacing: 12) {
+                TabView(selection: $selectedImageIndex) {
+                    ForEach(Array(imageUrls.enumerated()), id: \.offset) { index, url in
+                        Button {
+                            selectedImageIndex = index
+                            showFullScreenImage = true
+                        } label: {
+                            EventPosterImage(urlString: url, height: 240)
+                                .frame(maxWidth: .infinity)
+                                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                        }
+                        .buttonStyle(.plain)
+                        .frame(maxWidth: .infinity)
+                        .tag(index)
+                    }
+                }
+                .frame(height: 240)
+                .tabViewStyle(PageTabViewStyle(indexDisplayMode: imageUrls.count > 1 ? .automatic : .never))
+
+                if imageUrls.count > 1 {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(Array(imageUrls.enumerated()), id: \.offset) { index, url in
+                                Button {
+                                    selectedImageIndex = index
+                                } label: {
+                                    EventPosterImage(urlString: url, height: 64)
+                                        .frame(width: 64, height: 64)
+                                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                                .stroke(index == selectedImageIndex ? Color.accentColor : Color.clear, lineWidth: 2)
+                                        )
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                        .padding(.vertical, 2)
+                    }
+                }
+            }
+            .fullScreenCover(isPresented: $showFullScreenImage) {
+                FullScreenImageViewer(
+                    imageUrls: imageUrls,
+                    initialIndex: selectedImageIndex,
+                    onDismiss: { showFullScreenImage = false }
+                )
             }
         }
     }
@@ -465,6 +548,17 @@ private struct ActionButton: View {
 }
 
 private extension Event {
+    var detailImageUrls: [String] {
+        var urls = imageUrls
+        let poster = posterUrl.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        if !poster.isEmpty && !urls.contains(poster) {
+            urls.insert(poster, at: 0)
+        }
+
+        return urls
+    }
+
     var scheduleText: String {
         let start = formattedEventDate(startDate)
         let end = formattedEventDate(endDate)
