@@ -2,6 +2,8 @@
 //  EventCreationPage.swift
 //  eventhub-ios-client
 //
+//  Created by Эдуард Вартазарян on 12.07.2026.
+//
 
 import SwiftUI
 

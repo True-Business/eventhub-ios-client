@@ -74,6 +74,79 @@ class EventsViewModel: ObservableObject {
         searchResults = []
     }
 
+    func replaceEvent(_ event: Event) {
+        if let index = events.firstIndex(where: { $0.id == event.id }) {
+            events[index] = event
+        }
+
+        if let index = searchResults.firstIndex(where: { $0.id == event.id }) {
+            searchResults[index] = event
+        }
+    }
+
+    func removeEvent(_ event: Event) {
+        events.removeAll { $0.id == event.id }
+        searchResults.removeAll { $0.id == event.id }
+    }
+
+    func deleteEvent(_ event: Event, completion: @escaping (Result<Void, Error>) -> Void) {
+        repository.deleteEvent(eventId: event.id) { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success:
+                    self?.removeEvent(event)
+                    completion(.success(()))
+                case .failure(let error):
+                    self?.errorMessage = error.localizedDescription
+                    completion(.failure(error))
+                }
+            }
+        }
+    }
+
+    func setParticipation(
+        for event: Event,
+        userId: String?,
+        isParticipating: Bool,
+        completion: @escaping (Result<Event, Error>) -> Void
+    ) {
+        guard let userId = userId.flatMap(UUID.init(uuidString:)) else {
+            errorMessage = "Не удалось определить пользователя"
+            completion(.failure(ParticipationError.missingUserId))
+            return
+        }
+
+        let handler: (Result<Event, Error>) -> Void = { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let updatedEvent):
+                    self?.replaceEvent(updatedEvent)
+                    completion(.success(updatedEvent))
+                case .failure(let error):
+                    self?.errorMessage = error.localizedDescription
+                    completion(.failure(error))
+                }
+            }
+        }
+
+        if isParticipating {
+            repository.registerToEvent(eventId: event.id, userId: userId, completion: handler)
+        } else {
+            repository.unregisterFromEvent(eventId: event.id, completion: handler)
+        }
+    }
+
+    func loadParticipants(
+        for event: Event,
+        completion: @escaping (Result<[User], Error>) -> Void
+    ) {
+        repository.fetchParticipants(eventId: event.id) { result in
+            DispatchQueue.main.async {
+                completion(result)
+            }
+        }
+    }
+
     func eventsForCurrentEventsScreen(currentUserId: String?) -> [Event] {
         events.filter { event in
             switch eventsMainTab {
@@ -149,6 +222,7 @@ class EventsViewModel: ObservableObject {
             price: price,
             eventStatus: status,
             isUserParticipating: false,
+            isOwner: true,
             participantsCount: 0,
             isFinished: false
         )
@@ -169,6 +243,17 @@ class EventsViewModel: ObservableObject {
                     completion(false)
                 }
             }
+        }
+    }
+}
+
+private enum ParticipationError: LocalizedError {
+    case missingUserId
+
+    var errorDescription: String? {
+        switch self {
+        case .missingUserId:
+            return "Не удалось определить пользователя"
         }
     }
 }

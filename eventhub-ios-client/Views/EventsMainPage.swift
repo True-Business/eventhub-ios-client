@@ -116,7 +116,7 @@ struct EventsMainPage: View {
                 ScrollView {
                     LazyVGrid(columns: columns, spacing: 14) {
                         ForEach(events) { event in
-                            NavigationLink(destination: EventPage(event: event)) {
+                            NavigationLink(destination: EventPage(event: event, eventsViewModel: viewModel)) {
                                 TinyEventCard(event: event)
                                     .frame(maxWidth: .infinity)
                             }

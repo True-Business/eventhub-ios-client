@@ -82,8 +82,8 @@ let mockEventList: [Event] = [
 ]
 
 let mockUserList = [
-    User(id: UUID(), name: "Denis"),
-    User(id: UUID(), name: "Mark")
+    User(id: UUID(), name: "Denis", shortId: nil),
+    User(id: UUID(), name: "Mark", shortId: nil)
 ]
 
 let mockOrganization = Organization(

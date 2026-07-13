@@ -7,14 +7,38 @@
 import SwiftUI
 
 struct EventPage: View {
-    let event: Event
+    @ObservedObject var eventsViewModel: EventsViewModel
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var authViewModel: AuthViewModel
+    @State private var event: Event
+    @State private var isUpdatingParticipation = false
+    @State private var isDeletingEvent = false
+    @State private var showDeleteConfirmation = false
+    @State private var participationError: String?
+    @State private var participants: [User] = []
+    @State private var participantsError: String?
+    @State private var isLoadingParticipants = false
+    @State private var showParticipants = false
+
+    init(event: Event, eventsViewModel: EventsViewModel) {
+        self.eventsViewModel = eventsViewModel
+        _event = State(initialValue: event)
+    }
 
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                EventMainInfoSection(event: event)
+                EventMainInfoSection(event: event) {
+                    openParticipants()
+                }
                 EventAdditionalInfoSection(event: event)
-                EventActionsSection(event: event)
+                EventActionsSection(
+                    event: event,
+                    isUpdatingParticipation: isUpdatingParticipation,
+                    participationError: participationError
+                ) { shouldParticipate in
+                    setParticipation(shouldParticipate)
+                }
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 24)
@@ -33,11 +57,120 @@ struct EventPage: View {
         )
         .navigationTitle(event.title)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Button {
+                    } label: {
+                        Label("Поделиться", systemImage: "square.and.arrow.up")
+                    }
+
+                    if event.isOwner {
+                        Button {
+                        } label: {
+                            Label("Редактировать", systemImage: "pencil")
+                        }
+
+                        Button(role: .destructive) {
+                            showDeleteConfirmation = true
+                        } label: {
+                            Label("Удалить", systemImage: "trash")
+                        }
+                        .disabled(isDeletingEvent)
+                    }
+                } label: {
+                    Image(systemName: "ellipsis")
+                        .font(.system(size: 18, weight: .semibold))
+                        .frame(width: 32, height: 32)
+                }
+            }
+        }
+        .sheet(isPresented: $showParticipants) {
+            NavigationView {
+                ParticipantsSheet(
+                    participants: participants,
+                    isLoading: isLoadingParticipants,
+                    errorMessage: participantsError
+                )
+                .navigationTitle("Участники")
+                .navigationBarTitleDisplayMode(.inline)
+            }
+        }
+        .alert("Удалить мероприятие?", isPresented: $showDeleteConfirmation) {
+            Button("Удалить", role: .destructive) {
+                deleteEvent()
+            }
+
+            Button("Отмена", role: .cancel) {}
+        } message: {
+            Text("Мероприятие будет удалено для всех пользователей.")
+        }
+    }
+
+    private func setParticipation(_ shouldParticipate: Bool) {
+        guard !isUpdatingParticipation else { return }
+
+        isUpdatingParticipation = true
+        participationError = nil
+
+        eventsViewModel.setParticipation(
+            for: event,
+            userId: authViewModel.currentUserId,
+            isParticipating: shouldParticipate
+        ) { result in
+            isUpdatingParticipation = false
+
+            switch result {
+            case .success(let updatedEvent):
+                event = updatedEvent
+            case .failure(let error):
+                participationError = error.localizedDescription
+            }
+        }
+    }
+
+    private func deleteEvent() {
+        guard !isDeletingEvent else { return }
+
+        isDeletingEvent = true
+        participationError = nil
+
+        eventsViewModel.deleteEvent(event) { result in
+            isDeletingEvent = false
+
+            switch result {
+            case .success:
+                dismiss()
+            case .failure(let error):
+                participationError = error.localizedDescription
+            }
+        }
+    }
+
+    private func openParticipants() {
+        showParticipants = true
+
+        guard !isLoadingParticipants else { return }
+        isLoadingParticipants = true
+        participantsError = nil
+
+        eventsViewModel.loadParticipants(for: event) { result in
+            isLoadingParticipants = false
+
+            switch result {
+            case .success(let users):
+                participants = users
+            case .failure(let error):
+                participants = []
+                participantsError = error.localizedDescription
+            }
+        }
     }
 }
 
 private struct EventMainInfoSection: View {
     let event: Event
+    let onParticipantsTap: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -70,9 +203,20 @@ private struct EventMainInfoSection: View {
 
                 Spacer()
 
-                Text("Участники: \(event.participantsText)")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                Button(action: onParticipantsTap) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "person.2.fill")
+                            .font(.system(size: 13, weight: .semibold))
+                        Text(event.participantsText)
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                    }
+                    .foregroundColor(.accentColor)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 7)
+                    .background(Color.accentColor.opacity(0.10))
+                    .clipShape(Capsule())
+                }
             }
         }
         .padding(20)
@@ -112,48 +256,48 @@ private struct EventAdditionalInfoSection: View {
 
 private struct EventActionsSection: View {
     let event: Event
-    @State private var isParticipating: Bool
-
-    init(event: Event) {
-        self.event = event
-        _isParticipating = State(initialValue: event.isUserParticipating)
-    }
+    let isUpdatingParticipation: Bool
+    let participationError: String?
+    let onParticipationChange: (Bool) -> Void
 
     var body: some View {
         VStack(spacing: 12) {
             if let primaryButton = primaryButton {
                 Button {
                     guard primaryButton.enabled else { return }
-                    isParticipating.toggle()
+                    onParticipationChange(!event.isUserParticipating)
                 } label: {
-                    Text(primaryButton.text)
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(
-                            LinearGradient(
-                                colors: [
-                                    Color(red: 1.0, green: 0.38, blue: 0.0),
-                                    Color(red: 1.0, green: 0.65, blue: 0.0)
-                                ],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                            .opacity(primaryButton.enabled ? 1 : 0.45)
+                    HStack(spacing: 8) {
+                        if isUpdatingParticipation {
+                            ProgressView()
+                                .tint(.white)
+                        }
+
+                        Text(primaryButton.text)
+                            .font(.headline)
+                    }
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(
+                        LinearGradient(
+                            colors: primaryButton.colors,
+                            startPoint: .leading,
+                            endPoint: .trailing
                         )
-                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                        .opacity(primaryButton.enabled ? 1 : 0.45)
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                 }
-                .disabled(!primaryButton.enabled)
+                .disabled(!primaryButton.enabled || isUpdatingParticipation)
             }
 
-            HStack(spacing: 12) {
-                ActionButton(icon: "square.and.arrow.up", title: "Поделиться") {}
-                ActionButton(icon: "person.fill", title: "Участники") {}
+            if let participationError {
+                Text(participationError)
+                    .font(.footnote)
+                    .foregroundColor(.red)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
-
-            ActionButton(icon: "pencil", title: "Редактировать") {}
-            ActionButton(icon: "trash", title: "Отменить", roleColor: .red) {}
         }
         .padding(16)
         .frame(maxWidth: .infinity)
@@ -162,26 +306,79 @@ private struct EventActionsSection: View {
         .shadow(color: .black.opacity(0.10), radius: 8, x: 0, y: 4)
     }
 
-    private var primaryButton: (text: String, enabled: Bool)? {
+    private var primaryButton: (text: String, enabled: Bool, colors: [Color])? {
         let limitReached = event.peopleLimit != Int.max && event.participantsCount >= event.peopleLimit
+        let activeColors = [
+            Color(red: 1.0, green: 0.38, blue: 0.0),
+            Color(red: 1.0, green: 0.65, blue: 0.0)
+        ]
+        let participatingColors = [
+            Color(red: 0.18, green: 0.62, blue: 0.33),
+            Color(red: 0.32, green: 0.74, blue: 0.39)
+        ]
 
-        if event.isFinished && isParticipating {
-            return ("Вы участвовали", false)
-        }
-
-        if event.isFinished && !isParticipating {
+        if !event.withRegister {
             return nil
         }
 
-        if isParticipating {
-            return ("Не смогу пойти", true)
+        if event.isFinished && event.isUserParticipating {
+            return ("Вы участвовали", false, participatingColors)
+        }
+
+        if event.isFinished && !event.isUserParticipating {
+            return nil
+        }
+
+        if event.isUserParticipating {
+            return ("Вы записаны", true, participatingColors)
         }
 
         if limitReached {
-            return ("Лимит участников достигнут", false)
+            return ("Лимит участников достигнут", false, activeColors)
         }
 
-        return ("Хочу пойти", true)
+        return ("Хочу пойти", true, activeColors)
+    }
+}
+
+private struct ParticipantsSheet: View {
+    let participants: [User]
+    let isLoading: Bool
+    let errorMessage: String?
+
+    var body: some View {
+        Group {
+            if isLoading {
+                ProgressView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if let errorMessage {
+                Text(errorMessage)
+                    .font(.subheadline)
+                    .foregroundColor(.red)
+                    .multilineTextAlignment(.center)
+                    .padding()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if participants.isEmpty {
+                Text("Пока нет участников")
+                    .font(.headline)
+                    .foregroundColor(.secondary)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                List(participants) { user in
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(user.name)
+                            .font(.headline)
+
+                        if let shortId = user.shortId, !shortId.isBlank {
+                            Text(shortId.hasPrefix("@") ? shortId : "@\(shortId)")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+            }
+        }
     }
 }
 

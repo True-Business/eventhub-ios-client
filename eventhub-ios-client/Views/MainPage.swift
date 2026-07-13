@@ -18,7 +18,7 @@ struct MainPage: View {
                     ScrollView {
                         LazyVStack(spacing: 0) {
                             ForEach(viewModel.events) { event in
-                                NavigationLink(destination: EventPage(event: event)) {
+                                NavigationLink(destination: EventPage(event: event, eventsViewModel: viewModel)) {
                                     EventCard(event: event)
                                 }
                                 .buttonStyle(PlainButtonStyle()) // убираем эффект кнопки

@@ -2,7 +2,7 @@
 //  String+Validation.swift
 //  eventhub-ios-client
 //
-//  Created by Codex on 11.07.2026.
+//  Created by Эдуард Вартазарян on 11.07.2026.
 //
 
 import Foundation

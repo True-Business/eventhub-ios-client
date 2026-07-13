@@ -8,8 +8,13 @@ import Foundation
 
 protocol EventApi {
     func getEvents(category: EventCategory?, completion: @escaping (Result<[EventDto], AFError>) -> Void)
+    func getEvent(id: UUID, completion: @escaping (Result<EventDto, AFError>) -> Void)
     func searchEvents(filter: EventSearchFilterDto, completion: @escaping (Result<[EventDto], AFError>) -> Void)
     func createEvent(dto: EventCreateUpdateDto, completion: @escaping (Result<EventDto, AFError>) -> Void)
+    func deleteEvent(eventId: UUID, completion: @escaping (Result<Void, AFError>) -> Void)
+    func registerToEvent(eventId: UUID, userId: UUID, completion: @escaping (Result<Void, AFError>) -> Void)
+    func unregisterFromEvent(eventId: UUID, completion: @escaping (Result<Void, AFError>) -> Void)
+    func getParticipants(eventId: UUID, completion: @escaping (Result<[EventParticipantUserDto], AFError>) -> Void)
 }
 
 final class EventApiImpl: EventApi {
@@ -33,6 +38,17 @@ final class EventApiImpl: EventApi {
             }
     }
 
+    func getEvent(id: UUID, completion: @escaping (Result<EventDto, AFError>) -> Void) {
+        let url = baseURL + "api/v1/event/\(id.uuidString)"
+
+        authenticatedRequest(url, method: .get, parameters: Optional<String>.none, encoder: URLEncodedFormParameterEncoder.default)
+            .validate()
+            .responseDecodable(of: EventDto.self) { response in
+                self.logResponse(response, name: "getEvent")
+                completion(response.result)
+            }
+    }
+
     func searchEvents(filter: EventSearchFilterDto, completion: @escaping (Result<[EventDto], AFError>) -> Void) {
         let url = baseURL + "api/v1/event/search"
 
@@ -51,6 +67,51 @@ final class EventApiImpl: EventApi {
             .validate()
             .responseDecodable(of: EventDto.self) { response in
                 self.logResponse(response, name: "createEvent")
+                completion(response.result)
+            }
+    }
+
+    func deleteEvent(eventId: UUID, completion: @escaping (Result<Void, AFError>) -> Void) {
+        let url = baseURL + "api/v1/event/\(eventId.uuidString)"
+
+        authenticatedRequest(url, method: .delete, parameters: Optional<String>.none, encoder: URLEncodedFormParameterEncoder.default)
+            .validate()
+            .response { response in
+                self.logResponse(response, name: "deleteEvent")
+                completion(response.result.map { _ in () })
+            }
+    }
+
+    func registerToEvent(eventId: UUID, userId: UUID, completion: @escaping (Result<Void, AFError>) -> Void) {
+        let url = baseURL + "api/v1/event/\(eventId.uuidString)/register"
+        let parameters = ["userID": userId.uuidString]
+
+        authenticatedRequest(url, method: .post, parameters: parameters, encoder: URLEncodedFormParameterEncoder.default)
+            .validate()
+            .response { response in
+                self.logResponse(response, name: "registerToEvent")
+                completion(response.result.map { _ in () })
+            }
+    }
+
+    func unregisterFromEvent(eventId: UUID, completion: @escaping (Result<Void, AFError>) -> Void) {
+        let url = baseURL + "api/v1/event/\(eventId.uuidString)/register"
+
+        authenticatedRequest(url, method: .delete, parameters: Optional<String>.none, encoder: URLEncodedFormParameterEncoder.default)
+            .validate()
+            .response { response in
+                self.logResponse(response, name: "unregisterFromEvent")
+                completion(response.result.map { _ in () })
+            }
+    }
+
+    func getParticipants(eventId: UUID, completion: @escaping (Result<[EventParticipantUserDto], AFError>) -> Void) {
+        let url = baseURL + "api/v1/event/\(eventId.uuidString)/participants"
+
+        authenticatedRequest(url, method: .get, parameters: Optional<String>.none, encoder: URLEncodedFormParameterEncoder.default)
+            .validate()
+            .responseDecodable(of: [EventParticipantUserDto].self) { response in
+                self.logResponse(response, name: "getParticipants")
                 completion(response.result)
             }
     }

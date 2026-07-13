@@ -26,6 +26,65 @@ struct EventDto: Decodable {
     let open: Bool?
     let participantsCount: Int?
     let userParticipant: Bool?
+    let owner: Bool?
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case name
+        case startDateTime
+        case endDateTime
+        case updatedAt
+        case organizerId
+        case organizationId
+        case category
+        case address
+        case route
+        case description
+        case price
+        case status
+        case city
+        case peopleLimit
+        case registerEndDateTime
+        case withRegister
+        case isWithRegister
+        case open
+        case isOpen
+        case participantsCount
+        case userParticipant
+        case isUserParticipant
+        case owner
+        case isOwner
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        id = try container.decode(String.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        startDateTime = try container.decode(String.self, forKey: .startDateTime)
+        endDateTime = try container.decode(String.self, forKey: .endDateTime)
+        updatedAt = try container.decodeIfPresent(String.self, forKey: .updatedAt)
+        organizerId = try container.decodeIfPresent(String.self, forKey: .organizerId)
+        organizationId = try container.decodeIfPresent(String.self, forKey: .organizationId)
+        category = try container.decodeIfPresent(String.self, forKey: .category)
+        address = try container.decodeIfPresent(String.self, forKey: .address)
+        route = try container.decodeIfPresent(String.self, forKey: .route)
+        description = try container.decodeIfPresent(String.self, forKey: .description)
+        price = try container.decodeIfPresent(Double.self, forKey: .price)
+        status = try container.decodeIfPresent(String.self, forKey: .status)
+        city = try container.decodeIfPresent(String.self, forKey: .city)
+        peopleLimit = try container.decodeIfPresent(Int.self, forKey: .peopleLimit)
+        registerEndDateTime = try container.decodeIfPresent(String.self, forKey: .registerEndDateTime)
+        withRegister = try container.decodeIfPresent(Bool.self, forKey: .withRegister)
+            ?? container.decodeIfPresent(Bool.self, forKey: .isWithRegister)
+        open = try container.decodeIfPresent(Bool.self, forKey: .open)
+            ?? container.decodeIfPresent(Bool.self, forKey: .isOpen)
+        participantsCount = try container.decodeIfPresent(Int.self, forKey: .participantsCount)
+        userParticipant = try container.decodeIfPresent(Bool.self, forKey: .userParticipant)
+            ?? container.decodeIfPresent(Bool.self, forKey: .isUserParticipant)
+        owner = try container.decodeIfPresent(Bool.self, forKey: .owner)
+            ?? container.decodeIfPresent(Bool.self, forKey: .isOwner)
+    }
 }
 
 struct EventCreateUpdateDto: Encodable {
@@ -60,6 +119,22 @@ struct EventSearchFilterDto: Encodable {
     let isOpen: Bool?
 }
 
+struct EventParticipantUserDto: Decodable {
+    let id: String
+    let username: String
+    let shortId: String?
+}
+
+extension EventParticipantUserDto {
+    func toDomainUser() -> User {
+        User(
+            id: UUID(uuidString: id) ?? UUID(),
+            name: username,
+            shortId: shortId
+        )
+    }
+}
+
 extension EventDto {
     func toDomainEvent() -> Event {
         let category = EventCategory(rawValue: category?.uppercased() ?? "") ?? .placeholder
@@ -92,6 +167,7 @@ extension EventDto {
             price: price == 0 ? nil : price,
             eventStatus: EventStatus(rawValue: status?.uppercased() ?? "") ?? .draft,
             isUserParticipating: userParticipant ?? false,
+            isOwner: owner ?? false,
             participantsCount: participantsCount ?? 0,
             isFinished: Date.parseEventHubIsoString(endDateTime).map { $0 < Date() } ?? false
         )

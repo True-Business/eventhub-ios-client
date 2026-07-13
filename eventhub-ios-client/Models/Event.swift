@@ -28,6 +28,7 @@ struct Event: Identifiable {
     let price: Double?
     let eventStatus: EventStatus
     let isUserParticipating: Bool
+    let isOwner: Bool
     let participantsCount: Int
     let isFinished: Bool
 
@@ -53,6 +54,7 @@ struct Event: Identifiable {
         price: Double? = nil,
         eventStatus: EventStatus = .planned,
         isUserParticipating: Bool = false,
+        isOwner: Bool = false,
         participantsCount: Int = 0,
         isFinished: Bool = false
     ) {
@@ -77,6 +79,7 @@ struct Event: Identifiable {
         self.price = price
         self.eventStatus = eventStatus
         self.isUserParticipating = isUserParticipating
+        self.isOwner = isOwner
         self.participantsCount = participantsCount
         self.isFinished = isFinished
     }

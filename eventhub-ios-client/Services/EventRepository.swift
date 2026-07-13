@@ -39,6 +39,12 @@ class EventRepository {
         }
     }
 
+    func fetchEvent(eventId: UUID, completion: @escaping (Result<Event, Error>) -> Void) {
+        eventApi.getEvent(id: eventId) { result in
+            completion(result.map { $0.toDomainEvent() }.mapError { $0 })
+        }
+    }
+
     // Возвращает мок-мероприятие по id
     func fetchEventMock(eventId: String) -> Event? {
         mockEventList.first { $0.id.uuidString == eventId }
@@ -61,6 +67,40 @@ class EventRepository {
     func createEvent(_ event: Event, completion: @escaping (Result<Event, Error>) -> Void) {
         eventApi.createEvent(dto: event.toCreateUpdateDto()) { result in
             completion(result.map { $0.toDomainEvent() }.mapError { $0 })
+        }
+    }
+
+    func deleteEvent(eventId: UUID, completion: @escaping (Result<Void, Error>) -> Void) {
+        eventApi.deleteEvent(eventId: eventId) { result in
+            completion(result.mapError { $0 })
+        }
+    }
+
+    func registerToEvent(eventId: UUID, userId: UUID, completion: @escaping (Result<Event, Error>) -> Void) {
+        eventApi.registerToEvent(eventId: eventId, userId: userId) { result in
+            switch result {
+            case .success:
+                self.fetchEvent(eventId: eventId, completion: completion)
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+
+    func unregisterFromEvent(eventId: UUID, completion: @escaping (Result<Event, Error>) -> Void) {
+        eventApi.unregisterFromEvent(eventId: eventId) { result in
+            switch result {
+            case .success:
+                self.fetchEvent(eventId: eventId, completion: completion)
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+
+    func fetchParticipants(eventId: UUID, completion: @escaping (Result<[User], Error>) -> Void) {
+        eventApi.getParticipants(eventId: eventId) { result in
+            completion(result.map { $0.map { $0.toDomainUser() } }.mapError { $0 })
         }
     }
 }
