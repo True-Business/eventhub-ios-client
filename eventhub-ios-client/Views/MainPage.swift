@@ -30,7 +30,10 @@ struct MainPage: View {
                         Spacer()
                         BottomBarButton(icon: "house.fill", label: "Главная")
                         Spacer()
-                        BottomBarButton(icon: "person.2.fill", label: "Друзья")
+                        NavigationLink(destination: FriendsPage()) {
+                            BottomBarButton(icon: "person.2.fill", label: "Друзья")
+                        }
+                        .buttonStyle(.plain)
                         Spacer()
                         NavigationLink(destination: EventsMainPage(viewModel: viewModel)) {
                             BottomBarButton(icon: "calendar", label: "Мероприятия")
