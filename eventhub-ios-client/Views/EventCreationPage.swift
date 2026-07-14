@@ -32,79 +32,108 @@ struct EventCreationPage: View {
     @State private var posterImage: SelectedEventImage?
     @State private var photoImages: [SelectedEventImage] = []
 
+    private let controlColor = Color.black
+
     var body: some View {
-        Form {
-            Section("Основное") {
-                TextField("Название мероприятия", text: $title)
-                TextField("Описание мероприятия", text: $description, axis: .vertical)
-                    .lineLimit(3...6)
-                Picker("Категория", selection: $category) {
-                    ForEach(EventCategory.allCases.filter { $0 != .all }) { category in
-                        Text(category.displayName).tag(category)
-                    }
-                }
-            }
+        ZStack {
+            LinearGradient(
+                colors: [
+                    Color(red: 1.0, green: 0.38, blue: 0.0),
+                    Color(red: 1.0, green: 0.65, blue: 0.0),
+                    Color(red: 1.0, green: 0.78, blue: 0.25)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
 
-            Section("Изображения") {
-                PhotosPicker(selection: $posterPickerItem, matching: .images) {
-                    Label(posterImage == nil ? "Выбрать постер" : "Заменить постер", systemImage: "photo")
-                }
-
-                if let posterImage {
-                    EventCreationImagePreview(image: posterImage.image, height: 180)
-                }
-
-                PhotosPicker(selection: $photoPickerItems, maxSelectionCount: 8, matching: .images) {
-                    Label(photoImages.isEmpty ? "Выбрать фотографии" : "Изменить фотографии", systemImage: "photo.on.rectangle")
-                }
-
-                if !photoImages.isEmpty {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 10) {
-                            ForEach(photoImages) { photo in
-                                Image(uiImage: photo.image)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: 92, height: 92)
-                                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                            }
+            Form {
+                Section("Основное") {
+                    TextField("Название мероприятия", text: $title)
+                    TextField("Описание мероприятия", text: $description, axis: .vertical)
+                        .lineLimit(3...6)
+                    Picker("Категория", selection: $category) {
+                        ForEach(EventCategory.allCases.filter { $0 != .all }) { category in
+                            Text(category.displayName).tag(category)
                         }
-                        .padding(.vertical, 4)
                     }
                 }
-            }
+                .listRowBackground(Color(.systemBackground).opacity(0.9))
 
-            Section("Место и время") {
-                TextField("Город", text: $city)
-                TextField("Адрес", text: $address)
-                TextField("Как добраться", text: $route)
-                DatePicker("Начало", selection: $startDate, displayedComponents: [.date, .hourAndMinute])
-                DatePicker("Окончание", selection: $endDate, displayedComponents: [.date, .hourAndMinute])
-            }
+                Section("Изображения") {
+                    PhotosPicker(selection: $posterPickerItem, matching: .images) {
+                        Label(posterImage == nil ? "Выбрать постер" : "Заменить постер", systemImage: "photo")
+                            .foregroundStyle(controlColor)
+                    }
+                    .tint(controlColor)
 
-            Section("Настройки") {
-                TextField("Цена", text: $price)
-                    .keyboardType(.decimalPad)
-                TextField("Лимит участников", text: $peopleLimit)
-                    .keyboardType(.numberPad)
-                Toggle("Нужна регистрация", isOn: $withRegister)
-                Toggle("Открытое мероприятие", isOn: $isOpen)
-            }
+                    if let posterImage {
+                        EventCreationImagePreview(image: posterImage.image, height: 180)
+                    }
 
-            Section {
-                Button {
-                    submit(status: .draft)
-                } label: {
-                    Label("Сохранить черновик", systemImage: "tray.and.arrow.down")
+                    PhotosPicker(selection: $photoPickerItems, maxSelectionCount: 8, matching: .images) {
+                        Label(photoImages.isEmpty ? "Выбрать фотографии" : "Изменить фотографии", systemImage: "photo.on.rectangle")
+                            .foregroundStyle(controlColor)
+                    }
+                    .tint(controlColor)
+
+                    if !photoImages.isEmpty {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 10) {
+                                ForEach(photoImages) { photo in
+                                    Image(uiImage: photo.image)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: 92, height: 92)
+                                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                                }
+                            }
+                            .padding(.vertical, 4)
+                        }
+                    }
                 }
+                .listRowBackground(Color(.systemBackground).opacity(0.9))
 
-                Button {
-                    submit(status: .planned)
-                } label: {
-                    Label("Опубликовать", systemImage: "paperplane.fill")
+                Section("Место и время") {
+                    TextField("Город", text: $city)
+                    TextField("Адрес", text: $address)
+                    TextField("Как добраться", text: $route)
+                    DatePicker("Начало", selection: $startDate, displayedComponents: [.date, .hourAndMinute])
+                    DatePicker("Окончание", selection: $endDate, displayedComponents: [.date, .hourAndMinute])
                 }
-                .disabled(viewModel.isLoading)
+                .listRowBackground(Color(.systemBackground).opacity(0.9))
+
+                Section("Настройки") {
+                    TextField("Цена", text: $price)
+                        .keyboardType(.decimalPad)
+                    TextField("Лимит участников", text: $peopleLimit)
+                        .keyboardType(.numberPad)
+                    Toggle("Нужна регистрация", isOn: $withRegister)
+                    Toggle("Открытое мероприятие", isOn: $isOpen)
+                }
+                .listRowBackground(Color(.systemBackground).opacity(0.9))
+
+                Section {
+                    Button {
+                        submit(status: .draft)
+                    } label: {
+                        Label("Сохранить черновик", systemImage: "tray.and.arrow.down")
+                            .foregroundStyle(controlColor)
+                    }
+                    .tint(controlColor)
+
+                    Button {
+                        submit(status: .planned)
+                    } label: {
+                        Label("Опубликовать", systemImage: "paperplane.fill")
+                            .foregroundStyle(controlColor)
+                    }
+                    .tint(controlColor)
+                    .disabled(viewModel.isLoading)
+                }
+                .listRowBackground(Color(.systemBackground).opacity(0.9))
             }
+            .scrollContentBackground(.hidden)
         }
         .navigationTitle("Создание мероприятия")
         .navigationBarTitleDisplayMode(.inline)
@@ -113,6 +142,7 @@ struct EventCreationPage: View {
                 Button("Закрыть") {
                     dismiss()
                 }
+                .tint(controlColor)
             }
         }
         .overlay {
